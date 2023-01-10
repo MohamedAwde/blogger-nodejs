@@ -3,7 +3,7 @@ var jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 
 const getUser = async (req, res) => {
-  const _id = req.params.id;
+  const _id = req.body.userid;
 
   if (!_id) {
     return res.status(409).json({ message: "user id is required" });
@@ -52,21 +52,15 @@ const signUp = async (req, res) => {
 
       const { password, ...u } = new_user;
 
-      return res
-        .cookie("token", token, {
-          maxAge: 1000 * 60 * 60 * 60,
-          secure: false,
-          httpOnly: true,
-        })
-        .json(u);
+      return res.json({ ...u, token });
     } else {
       return res.status(500).json({ message: "error while sigging up" });
     }
   } catch (error) {
     console.log(error);
-    if (error.code == "11000")
-      res.status(409).json({ message: "email already exists." });
-    else res.status(500).send({ message: "error while sigging up user" });
+    return error.code == "11000"
+      ? res.status(409).json({ message: "email already exists." })
+      : res.status(500).send({ message: "error while sigging up user" });
   }
 };
 
@@ -84,13 +78,7 @@ const signIn = async (req, res) => {
         expiresIn: "1h",
       });
       const { password, ...u } = user;
-      return res
-        .cookie("token", token, {
-          maxAge: 1000 * 60 * 60 * 60,
-          secure: false,
-          httpOnly: true,
-        })
-        .json(u);
+      return res.json(u);
     }
   } catch (error) {
     console.log(error);
@@ -99,7 +87,7 @@ const signIn = async (req, res) => {
 };
 
 const signOut = async (req, res) => {
-  res.status(200).clearCookie("token").json();
+  return res.status(200).clearCookie("token").json();
 };
 
 module.exports = { getUser, getAllUsers, signUp, signIn, signOut };

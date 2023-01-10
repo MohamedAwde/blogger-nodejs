@@ -14,7 +14,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(
   cors({
     origin: [
-      "https://kemoday.github.io",
+      "https://MohamedAwde.github.io",
       "http://localhost:3000",
       "http://127.0.0.1:5173",
     ],

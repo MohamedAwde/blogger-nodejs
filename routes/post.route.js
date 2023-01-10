@@ -9,10 +9,8 @@ const {
   deletePost,
   updatePost,
 } = require("../controllers/post.controller");
-const Post = require("../models/post.module");
-const Auth = require("../controllers/utils/Auth");
 
-const validatePost = (req, res, next) => {
+const postNewVildate = (req, res, next) => {
   const schema = Joi.object({
     author: Joi.string().required(),
     title: Joi.string().required(),
@@ -28,18 +26,33 @@ const validatePost = (req, res, next) => {
   }
 };
 
+const postUpdateVildate = (req, res, next) => {
+  const schema = Joi.object({
+    title: Joi.string().required(),
+    content: Joi.string().required(),
+    featured_image: Joi.string().required(),
+  });
+
+  const { error } = schema.validate(req.body);
+  if (error) {
+    return res.status(409).json({ message: error.details[0].message });
+  } else {
+    next();
+  }
+};
+
 router.route("/").get(geAllPosts);
 
-router.route("/").post(validatePost, submitPost);
+router.route("/").post(postNewVildate, submitPost);
+
+router.route("/:postid").get(getPost);
 
 router.route("/user/:userid").get(getUserPosts);
 
-router.route("/:id").get(getPost);
+router.route("/user/:userid").get(getUserPosts);
 
-router.route("/:id").delete(Auth, deletePost);
+router.route("/:userid/:postid/").delete(deletePost);
 
-router.route("/:id").put(updatePost);
-
-router.route("/user/:id").get(getUserPosts);
+router.route("/:userid/:postid/").put(postUpdateVildate, updatePost);
 
 module.exports = router;
